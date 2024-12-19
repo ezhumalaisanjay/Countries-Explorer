@@ -74,7 +74,7 @@ Data is fetched from the [REST Countries API](https://restcountries.com/).
 country-explorer/
 ├── index.html       # Main HTML file
 ├── styles.css       # Stylesheet
-├── app.js           # Main JavaScript file
+├── script.js           # Main JavaScript file
 └── README.md        # Project documentation
 ```
 
