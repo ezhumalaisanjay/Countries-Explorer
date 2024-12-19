@@ -83,12 +83,16 @@ header p {
 
 /* Country Cards */
 .countries-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  justify-items: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    justify-items: center; /* Align items horizontally */
+    align-items: start;    /* Align items vertically at the top */
+    max-width: 1479px;
+    margin: 0 auto;        /* Center the grid container horizontally */
 }
+
 
 .country-card {
   background: white;
@@ -102,7 +106,6 @@ header p {
 }
 /* Overall page styling */
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   background-color: #f4f4f4;
