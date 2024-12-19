@@ -81,17 +81,7 @@ header p {
   display: none;
 }
 
-/* Country Cards */
-.countries-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    justify-items: center; /* Align items horizontally */
-    align-items: start;    /* Align items vertically at the top */
-    max-width: 1479px;
-    margin: 0 auto;        /* Center the grid container horizontally */
-}
+
 
 
 .country-card {
@@ -330,12 +320,37 @@ p{
     align-items: center;
   }
 
-  .countries-container {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
+
 
  
 }
+.countries-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    justify-items: center;
+    align-items: stretch;
+    max-width: 1479px;
+    margin: 0 auto;
+}
+
+
+/* iPad responsive adjustments (portrait and landscape) */
+@media (max-width: 768px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjust for smaller columns */
+        padding: 15px; /* Reduce padding */
+    }
+}
+
+@media (max-width: 1024px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust for mid-size tablets */
+    }
+}
+
+
 
 @media (max-width: 480px) {
   header h1 {
