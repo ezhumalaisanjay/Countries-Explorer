@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Country Details</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="detailsContainer"></div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        function renderCountryDetails() {
+          const country = JSON.parse(localStorage.getItem("selectedCountry"));
+          if (!country) return;
+
+          const detailsContainer = document.getElementById("detailsContainer");
+
+          if (!detailsContainer) {
+            console.error("detailsContainer not found");
+            return;
+          }
+
+          detailsContainer.innerHTML = `
+            <button onclick="window.history.back()">Back</button>
+            <h2>${country.name.common}</h2>
+            <img src="${country.flags.png}" alt="${country.name.common}" class="flag-image" />
+            <p><strong>🌐:</strong> ${country.tld}</p>
+    <p><strong>🏛️:</strong> ${country.capital || "N/A"}</p>
+    <p><strong>🌍:</strong> ${country.region}</p>
+    <p><strong>👤:</strong> ${country.population}</p>
+    <p><strong>🗾:</strong> ${country.area} km²</p>
+    <p><strong>🌐:</strong> ${Object.values(country.languages || {}).join(", ")}</p>
+          `;
+        }
+
+        renderCountryDetails();
+      });
+    </script>
+  </body>
+</html>

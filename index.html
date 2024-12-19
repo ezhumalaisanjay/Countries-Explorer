@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countries Explorer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Countries Explorer</h1>
+    <p>Discover countries worldwide with details like population, region, and capital.</p>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search countries..."
+      autocomplete="off"
+    />
+    <ul id="suggestions" class="suggestions"></ul>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <select id="regionFilter">
+      <option value="">Filter by Region</option>
+      <option value="Africa">Africa</option>
+      <option value="Americas">Americas</option>
+      <option value="Asia">Asia</option>
+      <option value="Europe">Europe</option>
+      <option value="Oceania">Oceania</option>
+    </select>
+
+    <select id="languageFilter">
+      <option value="">Filter by Language</option>
+      <option value="English">English</option>
+      <option value="Spanish">Spanish</option>
+      <option value="French">French</option>
+      <option value="Chinese">Chinese</option>
+    </select>
+  </div>
+
+
+  <!-- Countries List -->
+  <div id="countriesContainer" class="countries-container"></div>
+<!-- Button to toggle Favorites -->
+  <button id="toggleFavoritesBtn" class="favoritess">Favorites</button>
+  <!-- Favorites -->
+  
+  <aside id="favoritesContainer" class="favorites" style="display: none;">
+    <h3>Favorites</h3>
+    <ul id="favoritesList"></ul>
+  </aside>
+  
+
+  <script src="script.js"></script>
+  <!-- Development version -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+<!-- Production version -->
+<script src="https://unpkg.com/lucide@latest"></script>
+</body>
+</html>
