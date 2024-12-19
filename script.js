@@ -53,16 +53,27 @@ function displayCountries(countries) {
       <h3 class="all">${country.name.common}</h3>
       <p class="all">👤: ${country.population}</p>
       <p class="all">🏛️: ${country.capital || "N/A"}</p>
-      <button class="favorite-btn" onclick="toggleFavorite('${country.name.common}')">
-        ${isFavorite ? "❤️" : "🤍"} <!-- Heart icon changes based on favorite status -->
+      <button class="favorite-btn">
+        ${isFavorite ? "❤️" : "🤍"}
       </button>
     `;
-    // Add click event for details
+
+    // Add event listener for the card to show details
     card.addEventListener("click", () => showDetails(country));
-    
+
+    // Add event listener for the favorite button
+    const favoriteBtn = card.querySelector(".favorite-btn");
+    favoriteBtn.addEventListener("click", (event) => {
+      event.stopPropagation(); // Prevent card click from triggering
+      toggleFavorite(country.name.common);
+      // Update button text dynamically
+      favoriteBtn.innerHTML = favorites.includes(country.name.common) ? "❤️" : "🤍";
+    });
+
     countriesContainer.appendChild(card);
   });
 }
+
 // Show country details (triggered on click of country card)
 function showDetails(country) {
   // Save country data in localStorage or in history
@@ -70,23 +81,7 @@ function showDetails(country) {
   window.location.href = "/country.html"; // Redirect to details page
 }
 
-// Render country details page
-function renderCountryDetails() {
-  const country = JSON.parse(localStorage.getItem("selectedCountry"));
-  if (!country) return;
 
-  const detailsContainer = document.getElementById("detailsContainer");
-  detailsContainer.innerHTML = `
-    <button onclick="window.history.back()">Back</button>
-    <h2>${country.name.common}</h2>
-    <p><strong>🌐:</strong> ${country.tld}</p>
-    <p><strong>🏛️:</strong> ${country.capital || "N/A"}</p>
-    <p><strong>🌍:</strong> ${country.region}</p>
-    <p><strong>👤:</strong> ${country.population}</p>
-    <p><strong>🗾:</strong> ${country.area} km²</p>
-    <p><strong>🌐:</strong> ${Object.values(country.languages || {}).join(", ")}</p>
-  `;
-}
 
 // Toggle favorite status of a country
 function toggleFavorite(countryName) {

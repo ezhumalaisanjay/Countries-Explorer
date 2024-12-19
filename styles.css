@@ -119,7 +119,7 @@ body {
 /* Individual country card styling */
 .country-card {
   position: relative;
-  background-color: #fff;
+  background-color: #aad8e6;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 327px;
