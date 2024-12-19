@@ -331,12 +331,7 @@ p{
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
-  .favorites {
-    position: static;
-    margin: 20px auto;
-    width: 100%;
-    max-width: 400px;
-  }
+ 
 }
 
 @media (max-width: 480px) {
