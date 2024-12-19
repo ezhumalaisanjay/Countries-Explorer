@@ -246,6 +246,31 @@ p{
       margin-top: 40px;
 
 }
+@media (max-width: 834px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust column size for portrait */
+        padding: 15px; /* Reduce padding */
+    }
+}
+
+@media (max-width: 1194px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(275px, 1fr)); /* Adjust column size for landscape */
+    }
+}
+
+@media (max-width: 1024px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust column size */
+        padding: 20px;
+    }
+}
+
+@media (max-width: 1366px) {
+    .countries-container {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Keep wider columns for large screens */
+    }
+}
 
 .favorites h3 {
   margin: 0;
