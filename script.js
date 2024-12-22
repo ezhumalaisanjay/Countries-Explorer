@@ -7,7 +7,7 @@ const favoritesContainer = document.getElementById("favoritesList");
 const showMoreButton = document.createElement("button");
 
 let allCountries = [];
-let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+let favorites = []; // Store favorites in memory
 let displayedCountries = [];
 let countriesPerPage = 12; // Number of countries to display at once
 
@@ -20,21 +20,18 @@ async function fetchCountries() {
   if (allCountries.length > countriesPerPage) createShowMoreButton();
 }
 
-
 // Get references to the button and the favorites container
-const toggleFavoritesBtn = document.getElementById('toggleFavoritesBtn');
-const favoritesContainers = document.getElementById('favoritesContainer');
+const toggleFavoritesBtn = document.getElementById("toggleFavoritesBtn");
+const favoritesContainers = document.getElementById("favoritesContainer");
 
 // Add an event listener to the button to toggle the favorites container visibility
-toggleFavoritesBtn.addEventListener('click', () => {
-  // Toggle the visibility of the favorites container
-  if (favoritesContainers.style.display === 'none' || favoritesContainers.style.display === '') {
-    favoritesContainers.style.display = 'block'; // Show the container
+toggleFavoritesBtn.addEventListener("click", () => {
+  if (favoritesContainers.style.display === "none" || favoritesContainers.style.display === "") {
+    favoritesContainers.style.display = "block"; // Show the container
   } else {
-    favoritesContainers.style.display = 'none'; // Hide the container
+    favoritesContainers.style.display = "none"; // Hide the container
   }
 });
-
 
 fetchCountries();
 
@@ -44,15 +41,15 @@ function displayCountries(countries) {
   countries.forEach((country) => {
     const card = document.createElement("div");
     card.className = "country-card";
-    
+
     // Check if the country is already in favorites
     const isFavorite = favorites.includes(country.name.common);
-    
+
     card.innerHTML = `
       <img src="${country.flags.png}" alt="${country.name.common}" class="flag-image" />
       <h3 class="all">${country.name.common}</h3>
-      <p class="all">👤: ${country.population}</p>
-      <p class="all">🏛️: ${country.capital || "N/A"}</p>
+      <p class="all"><i class="fas fa-users"></i>: ${country.population}</p>
+      <p class="all"><i class="fas fa-city"></i>: ${country.region || "N/A"}</p>
       <button class="favorite-btn">
         ${isFavorite ? "❤️" : "🤍"}
       </button>
@@ -66,7 +63,6 @@ function displayCountries(countries) {
     favoriteBtn.addEventListener("click", (event) => {
       event.stopPropagation(); // Prevent card click from triggering
       toggleFavorite(country.name.common);
-      // Update button text dynamically
       favoriteBtn.innerHTML = favorites.includes(country.name.common) ? "❤️" : "🤍";
     });
 
@@ -75,29 +71,24 @@ function displayCountries(countries) {
 }
 
 // Show country details (triggered on click of country card)
-function showDetails(country) {
-  // Save country data in localStorage or in history
-  localStorage.setItem("selectedCountry", JSON.stringify(country));
-  window.location.href = "/country.html"; // Redirect to details page
-}
+ function showDetails(country) {
+      console.log("Selected Country Details:", country);
 
+      // Store the country details in sessionStorage
+      sessionStorage.setItem("selectedCountry", JSON.stringify(country));
 
-
+      // Redirect to the details page
+      window.location.href = "country.html";
+    }
 // Toggle favorite status of a country
 function toggleFavorite(countryName) {
   if (favorites.includes(countryName)) {
-    // Remove from favorites
     favorites = favorites.filter((name) => name !== countryName);
   } else {
-    // Add to favorites
     favorites.push(countryName);
   }
-  
-  // Update localStorage and the favorites list UI
-  localStorage.setItem("favorites", JSON.stringify(favorites));
+
   updateFavoritesUI();
-  
-  // Re-render the country cards with updated favorite status
   displayCountries(displayedCountries);
 }
 
@@ -106,7 +97,7 @@ function createShowMoreButton() {
   showMoreButton.textContent = "Show More";
   showMoreButton.className = "show-more-btn";
   showMoreButton.addEventListener("click", loadMoreCountries);
-  document.body.appendChild(showMoreButton); // Add it to the end of the body
+  document.body.appendChild(showMoreButton);
 }
 
 // Load more countries when "Show More" is clicked
@@ -116,7 +107,6 @@ function loadMoreCountries() {
   displayedCountries = [...displayedCountries, ...nextCountries];
   displayCountries(displayedCountries);
 
-  // Hide the button if no more countries are left
   if (displayedCountries.length >= allCountries.length) {
     showMoreButton.style.display = "none";
   }
@@ -143,8 +133,6 @@ function loadMoreCountries() {
 // Search functionality
 searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase();
-  
-  // If there's a search query, filter the countries
   if (query) {
     const results = allCountries.filter((c) =>
       c.name.common.toLowerCase().includes(query)
@@ -158,28 +146,24 @@ searchInput.addEventListener("input", () => {
         displayedCountries = [c];
         displayCountries(displayedCountries);
         suggestions.innerHTML = "";
-        showMoreButton.style.display = "none"; // Hide "Show More" for single result
+        showMoreButton.style.display = "none";
       };
       suggestions.appendChild(li);
     });
     suggestions.style.display = "block";
-    
-    // Display filtered results
+
     displayedCountries = results.slice(0, countriesPerPage);
     displayCountries(displayedCountries);
     showMoreButton.style.display = results.length > countriesPerPage ? "block" : "none";
   } else {
-    // When there's no search query, show all countries
     displayedCountries = allCountries.slice(0, countriesPerPage);
     displayCountries(displayedCountries);
     suggestions.style.display = "none";
-    
-    // If there are more countries, show "Show More"
     showMoreButton.style.display = allCountries.length > countriesPerPage ? "block" : "none";
   }
 });
 
-// Favorites functionality
+// Update favorites UI
 function updateFavoritesUI() {
   favoritesContainer.innerHTML = "";
   favorites.forEach((name) => {
