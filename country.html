@@ -1,141 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Country Detail View</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f7f6;
-      color: #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      transition: background-color 0.3s ease;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Country Details</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="favorites.js"></script>
+  </head>
+  <body>
+    <div id="detailsContainer"></div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        async function fetchCountry(countryCode) {
+          const res = await fetch(`https://restcountries.com/v3.1/name/${countryCode}?fullText=true`);
+          let countriesResult = await res.json();
+          if (countriesResult && countriesResult.length) {
+            return countriesResult[0];
+          }
+          return null;
+        }
+        async function renderCountryDetails() {
+          const urlParams = new URLSearchParams(window.location.search);
+          // Get a specific query parameter by name
+          const countryCode = urlParams.get('country'); 
+          const country = await fetchCountry(countryCode);
+          if (!country) {
+            detailsContainer.innerHTML = `
+            <button onclick="window.location.href = document.referrer ? document.referrer : '/index.html'">Back</button>
+            <h2>Invalid Country Code: The code you entered is not recognized (${countryCode}).</h2>`;
+            return;
+          };
 
-    #detailsContainer {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-      width: 90%;
-      max-width: 600px;
-      text-align: center;
-      transition: transform 0.3s ease-in-out;
-    }
+          let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+          detailsContainer.innerHTML = `
+            <div class="details-action-btn">
+              <button class="back-btn" onclick="window.location.href = document.referrer ? document.referrer : '/index.html'">⬅ Back</button>
+              <button class="fav-btn">
+                ${isFavorite(country) ? "❤️" : "🤍"}
+              </button>
+            </div>
+            <div class="country-details">
+              <h2>${country.name.common}</h2>
+              <img src="${country.flags.png}" alt="${country.name.common}" class="flag-image" />
+            </div>
+            <div class="field-details">
+                <div class="field">
+                  <span class="field-name">Top Level Domain</span>
+                  <span class="field-value">${country.tld}</span>
+                </div>
+                <div class="field">
+                  <span class="field-name">Capital</span>
+                  <span class="field-value">${country.capital}</span>
+                </div>
+                <div class="field">
+                  <span class="field-name">Region</span>
+                  <span class="field-value">${country.region}</span>
+                </div>
+                <div class="field">
+                  <span class="field-name">Population</span>
+                  <span class="field-value">${country.population.toLocaleString()}</span>
+                </div>
+                <div class="field">
+                  <span class="field-name">Area</span>
+                  <span class="field-value">${country.area.toLocaleString() } km²</span>
+                </div>
+                <div class="field">
+                  <span class="field-name">Languages</span>
+                  <span class="field-value">${Object.values(country.languages || {}).join(", ") }</span>
+                </div>
+            </div>
+            <div style="margin-top: 20px; max-width:100%;list-style:none; transition: none;overflow:hidden;width:600px;height:200px;"><div id="google-maps-display" style="height:100%; width:100%;max-width:100%;"><iframe style="height:100%;width:100%;border:0;" frameborder="0" src="https://www.google.com/maps/embed/v1/place?q=${country.name.common}&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"></iframe></div><a class="embed-ded-maphtml" href="https://www.bootstrapskins.com/themes" id="enable-map-info">premium bootstrap themes</a><style>#google-maps-display img{max-width:none!important;background:none!important;font-size: inherit;font-weight:inherit;}</style></div>
+          `;
 
-    #detailsContainer:hover {
-      transform: scale(1.02);
-    }
+          document.getElementsByClassName("fav-btn")[0].addEventListener("click", () => {
+            try {
+              let result = toggleFavorite(country);
+              if (result) {
+                document.getElementsByClassName("fav-btn")[0].innerHTML = "❤️";
+              }
+              else {
+                document.getElementsByClassName("fav-btn")[0].innerHTML = "🤍";
+              }
+            } catch (err) {
+              alert(err.message)
+            }
+          });
+        }
 
-    h2 {
-      font-family: 'Caveat', cursive;
-      font-size: 3em;
-      margin-bottom: 20px;
-      color: #0073e6;
-    }
-
-    .flag-image {
-      width: 120px;
-      height: auto;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      transition: box-shadow 0.3s ease;
-    }
-
-    .flag-image:hover {
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .all {
-      font-size: 1.2em;
-      margin-bottom: 15px;
-      line-height: 1.6;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      text-align: left;
-    }
-
-    .all i {
-      margin-right: 12px;
-      color: #0073e6;
-    }
-
-    button {
-      padding: 12px 25px;
-      background-color: #0073e6;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      font-size: 1.1em;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-bottom: 20px;
-    }
-
-    button:hover {
-      background-color: #005bb5;
-    }
-
-    @media (max-width: 768px) {
-      #detailsContainer {
-        width: 95%;
-        padding: 20px;
-        margin: 20px;
-      }
-
-      h2 {
-        font-size: 2.2em;
-      }
-
-      .all {
-        font-size: 1.1em;
-      }
-
-      button {
-        width: 100%;
-        padding: 12px 0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="detailsContainer"></div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      function renderCountryDetails() {
-        const country = JSON.parse(sessionStorage.getItem("selectedCountry"));
-        if (!country) return;
-
-        const detailsContainer = document.getElementById("detailsContainer");
-        detailsContainer.innerHTML = `
-          <button onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
-          <h2>${country.name.common}</h2>
-          <img src="${country.flags.png}" alt="${country.name}" class="flag-image" />
-          <div class="all"><i class="fas fa-globe"></i> <strong>Domain:</strong> ${country.tld}</div>
-          <div class="all"><i class="fas fa-city"></i> <strong>Capital:</strong> ${country.capital || "N/A"}</div>
-          <div class="all"><i class="fas fa-globe-americas"></i> <strong>Region:</strong> ${country.region}</div>
-          <div class="all"><i class="fas fa-users"></i> <strong>Population:</strong> ${country.population}</div>
-          <div class="all"><i class="fas fa-map-marker-alt"></i> <strong>Area:</strong> ${country.area} km²</div>
-          <div class="all"><i class="fas fa-language"></i> <strong>Languages:</strong> ${Object.values(country.languages).join(", ")}</div>
-        `;
-      }
-
-      renderCountryDetails();
-    });
-  </script>
-</body>
+        renderCountryDetails();
+      });
+    </script>
+  </body>
 </html>
