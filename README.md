@@ -103,12 +103,6 @@ country-explorer/
 
 ---
 
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
----
-
 ## Acknowledgments
 
 - [REST Countries API](https://restcountries.com/) for providing the country data.
