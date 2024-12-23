@@ -54,6 +54,7 @@ async function fetchCountries() {
     }
   } else {
     countriesContainer.innerHTML = `<div class="noresults">No countries found for your search.</div>`;
+    document.getElementById("resultsCount").style.display = "none";
   }
   displayFavorites();
   if (allCountries.length > countriesPerPage) {
