@@ -1,11 +1,13 @@
 const countriesContainer = document.getElementById("countriesContainer");
 const searchInput = document.getElementById("searchInput");
+const suggestions = document.getElementById("suggestions");
 const regionFilter = document.getElementById("regionFilter");
 const languageFilter = document.getElementById("languageFilter");
 const favoritesContainer = document.getElementById("favoritesContainer");
 const showMoreButton = document.createElement("button");
 
 let allCountries = [];
+let displayableCountries = [];
 let displayedCountries = [];
 let countriesPerPage = 12; // Number of countries to display at once
 
@@ -18,18 +20,12 @@ async function fetchCountries() {
   const search = params.get("search");
 
   const res = await fetch("https://restcountries.com/v3.1/all");
-  allCountries = await res.json();
+  allCountries = await res.json(); // for instant search usage
 
   document.getElementById("searchInput").value = search || "";
   document.getElementById("regionFilter").value = region || "";
   document.getElementById("languageFilter").value = language || "";
   let isFilterApplied = false;
-  if (search) {
-    isFilterApplied = true;
-    allCountries = allCountries.filter(
-      (c) => c.name.common.toLowerCase().indexOf(search.toLowerCase()) >= 0
-    );
-  }
   if (region) {
     isFilterApplied = true;
     allCountries = allCountries.filter((c) => c.region === region);
@@ -40,14 +36,22 @@ async function fetchCountries() {
       Object.values(c.languages || {}).includes(language)
     );
   }
-  displayedCountries = allCountries.slice(0, countriesPerPage);
+  if (search) {
+    isFilterApplied = true;
+    displayableCountries = allCountries.filter(
+      (c) => c.name.common.toLowerCase().indexOf(search.toLowerCase()) >= 0
+    );
+  } else {
+    displayableCountries = allCountries;
+  }
+  displayedCountries = displayableCountries.slice(0, countriesPerPage);
   if (displayedCountries.length) {
     displayCountries(displayedCountries);
 
     if (isFilterApplied) {
       document.getElementById(
         "resultsCount"
-      ).innerHTML = `Showing ${allCountries.length} results for your search. <a href="javascript:void(0)" onclick="viewAll()">View All</a>`;
+      ).innerHTML = `Showing ${displayableCountries.length} results for your search. <a href="javascript:void(0)" onclick="viewAll()">View All</a>`;
       document.getElementById("resultsCount").style.display = "block";
     } else {
       document.getElementById("resultsCount").style.display = "none";
@@ -57,7 +61,7 @@ async function fetchCountries() {
     document.getElementById("resultsCount").style.display = "none";
   }
   displayFavorites();
-  if (allCountries.length > countriesPerPage) {
+  if (displayableCountries.length > countriesPerPage) {
     createShowMoreButton();
   } else {
     showMoreButton.style.display = "none";
@@ -128,7 +132,7 @@ function createShowMoreButton() {
 // Load more countries when "Show More" is clicked
 function loadMoreCountries() {
   const currentCount = displayedCountries.length;
-  const nextCountries = allCountries.slice(
+  const nextCountries = displayableCountries.slice(
     currentCount,
     currentCount + countriesPerPage
   );
@@ -136,7 +140,7 @@ function loadMoreCountries() {
   displayCountries(displayedCountries);
 
   // Hide the button if no more countries are left
-  if (displayedCountries.length >= allCountries.length) {
+  if (displayedCountries.length >= displayableCountries.length) {
     showMoreButton.style.display = "none";
   }
 }
@@ -150,11 +154,25 @@ function viewAll() {
   fetchCountries();
 }
 
+function updateSearch(query) {
+  let url = new URL(window.location.href);
+  if (query) {
+    url.searchParams.set("search", query);
+  } else {
+    url.searchParams.delete("search");
+  }
+  window.history.pushState({}, "", url);
+  fetchCountries();
+}
+
+function hideSearchSuggestions() {
+  suggestions.innerHTML = "";
+  suggestions.style.display = "none";
+}
+
 // Filter by Region or Language
 [regionFilter, languageFilter].forEach((filter) => {
   filter.addEventListener("change", () => {
-    let filtered = allCountries;
-
     let url = new URL(window.location.href);
 
     if (regionFilter.value) {
@@ -172,16 +190,59 @@ function viewAll() {
   });
 });
 
-// Search functionality
-searchInput.addEventListener("change", () => {
+// Search autosuggestions
+searchInput.addEventListener("input", () => {
   const query = searchInput.value.toLowerCase();
 
-  let url = new URL(window.location.href);
+  // If there's a search query, filter the countries
   if (query) {
-    url.searchParams.set("search", query);
+    const results = allCountries.filter((c) =>
+      c.name.common.toLowerCase().includes(query)
+    );
+    if (!results.length) {
+      hideSearchSuggestions();
+      return;
+    }
+    suggestions.innerHTML = "";
+    results.slice(0, 5).forEach((c) => {
+      const li = document.createElement("li");
+      const searchPattern = new RegExp(`(${query})`, "gi");
+      li.innerHTML = c.name.common.replace(searchPattern, "<b>$1</b>");
+      li.onclick = () => {
+        showDetails(c.name.common);
+        return;
+      };
+      suggestions.appendChild(li);
+    });
+    if (results.length > 5) {
+      const li = document.createElement("li");
+      li.classList.add("suggestions-view-all");
+      li.innerHTML = `Show all results for <b>${searchInput.value}</b>`;
+      li.onclick = () => {
+        updateSearch(query);
+        hideSearchSuggestions();
+      };
+      suggestions.appendChild(li);
+    }
+    suggestions.style.display = "block";
   } else {
-    url.searchParams.delete("search");
+    hideSearchSuggestions();
   }
-  window.history.pushState({}, "", url);
-  fetchCountries();
+});
+
+// Search functionality
+searchInput.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") {
+    hideSearchSuggestions();
+    const query = searchInput.value.toLowerCase();
+
+    let url = new URL(window.location.href);
+    if (query) {
+      url.searchParams.set("search", query);
+    } else {
+      url.searchParams.delete("search");
+    }
+    window.history.pushState({}, "", url);
+    fetchCountries();
+  }
 });

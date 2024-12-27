@@ -32,8 +32,7 @@ header p {
 }
 
 #searchInput {
-  width: 100%;
-  max-width: 400px;
+  width: 400px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -44,12 +43,14 @@ header p {
   top: 100%;
   background: white;
   border: 1px solid #ccc;
-  width: 100%;
-  max-width: 400px;
+  border-radius: 5px;
+  width: 420px;
   list-style: none;
   padding: 0;
+  margin: 0;
   display: none;
   z-index: 10;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
 
 .suggestions li {
@@ -59,6 +60,9 @@ header p {
 
 .suggestions li:hover {
   background-color: #f0f0f0;
+}
+.suggestions-view-all {
+  border-top: 1px solid #cccccc;
 }
 
 /* Filters */
@@ -343,7 +347,7 @@ p{
 /* Responsive Styles */
 @media (max-width: 768px) {
   .filters {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
   }
   .page-container {
@@ -361,9 +365,6 @@ p{
     background-color: transparent;
     border: 0px;
   }
-}
-
-@media (max-width: 480px) {
   header h1 {
     font-size: 1.5rem;
   }
@@ -375,8 +376,10 @@ p{
   #searchInput {
     width: 90%;
   }
-
+  #suggestions {
+    width: 95%;
+  }
   .filters select {
-    width: 90%;
+    width: 47%;
   }
 }
