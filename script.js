@@ -233,16 +233,8 @@ searchInput.addEventListener("input", () => {
 // Search functionality
 searchInput.addEventListener("keypress", (event) => {
   if (event.key === "Enter") {
-    hideSearchSuggestions();
     const query = searchInput.value.toLowerCase();
-
-    let url = new URL(window.location.href);
-    if (query) {
-      url.searchParams.set("search", query);
-    } else {
-      url.searchParams.delete("search");
-    }
-    window.history.pushState({}, "", url);
-    fetchCountries();
+    updateSearch(query);
+    hideSearchSuggestions();
   }
 });
