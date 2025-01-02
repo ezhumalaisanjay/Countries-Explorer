@@ -1,103 +1,98 @@
+import { applyQueryFilters, fetchCountries, filterCountries, getQueryFilters } from "./utils.js";
+
 const countriesContainer = document.getElementById("countriesContainer");
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 const regionFilter = document.getElementById("regionFilter");
 const languageFilter = document.getElementById("languageFilter");
 const favoritesContainer = document.getElementById("favoritesContainer");
-const showMoreButton = document.createElement("button");
+const showMoreButton = document.getElementById("showMoreButton");
 
 let allCountries = [];
-let displayableCountries = [];
-let displayedCountries = [];
-let countriesPerPage = 12; // Number of countries to display at once
+let countriesPerPage = 12;
+let currentPage = 1;
 
-// Fetch countries on page load
-async function fetchCountries() {
-  const url = new URL(window.location.href);
-  const params = url.searchParams;
-  const region = params.get("region");
-  const language = params.get("language");
-  const search = params.get("search");
+document.addEventListener("DOMContentLoaded", () => {
+  displayCountries(); // Fetch and render countries
+  displayFavorites(); // Display favorite countries
+  registerEvents(); // Attach event listeners
+});
 
-  const res = await fetch("https://restcountries.com/v3.1/all");
-  allCountries = await res.json(); // for instant search usage
+async function displayCountries() {
+  const { region, language, search } = getQueryFilters();
+  prefillFilters();
 
-  document.getElementById("searchInput").value = search || "";
-  document.getElementById("regionFilter").value = region || "";
-  document.getElementById("languageFilter").value = language || "";
-  let isFilterApplied = false;
-  if (region) {
-    isFilterApplied = true;
-    allCountries = allCountries.filter((c) => c.region === region);
-  }
-  if (language) {
-    isFilterApplied = true;
-    allCountries = allCountries.filter((c) =>
-      Object.values(c.languages || {}).includes(language)
-    );
-  }
-  if (search) {
-    isFilterApplied = true;
-    displayableCountries = allCountries.filter(
-      (c) => c.name.common.toLowerCase().indexOf(search.toLowerCase()) >= 0
-    );
-  } else {
-    displayableCountries = allCountries;
-  }
-  displayedCountries = displayableCountries.slice(0, countriesPerPage);
-  if (displayedCountries.length) {
-    displayCountries(displayedCountries);
+  try {
+    allCountries = await filterCountries(region, language, search);
+    if (allCountries.length) {
+      currentPage = 1;
+      renderCountriesWithPagination(allCountries);
 
-    if (isFilterApplied) {
-      document.getElementById(
-        "resultsCount"
-      ).innerHTML = `Showing ${displayableCountries.length} results for your search. <a href="javascript:void(0)" onclick="viewAll()">View All</a>`;
-      document.getElementById("resultsCount").style.display = "block";
+      if (region || language || search) {
+        document.getElementById(
+          "resultsCount"
+        ).innerHTML = `Showing ${allCountries.length} results for your search. `;
+
+        const viewAllLink = document.createElement("a");
+        viewAllLink.setAttribute("href", "javascript:void(0)")
+        viewAllLink.innerHTML = "View All";
+        viewAllLink.onclick = () => {
+          viewAll();
+        };
+        document.getElementById("resultsCount").appendChild(viewAllLink);
+        document.getElementById("resultsCount").style.display = "block";
+      } else {
+        document.getElementById("resultsCount").style.display = "none";
+      }
     } else {
+      countriesContainer.innerHTML = `<div class="noresults">No countries found for your search.</div>`;
       document.getElementById("resultsCount").style.display = "none";
     }
-  } else {
-    countriesContainer.innerHTML = `<div class="noresults">No countries found for your search.</div>`;
-    document.getElementById("resultsCount").style.display = "none";
   }
-  displayFavorites();
-  if (displayableCountries.length > countriesPerPage) {
-    createShowMoreButton();
-  } else {
-    showMoreButton.style.display = "none";
+  catch (error) {
+    countriesContainer.innerHTML = `<div class="noresults">Unable to fetch countries. Please try again by refreshing the page.</div>`;
+    document.getElementById("resultsCount").style.display = "none";
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  fetchCountries();
-});
+function prefillFilters() {
+  const { region, language, search } = getQueryFilters();
+  document.getElementById("searchInput").value = search || "";
+  document.getElementById("regionFilter").value = region || "";
+  document.getElementById("languageFilter").value = language || "";
+}
 
-// Display countries as cards
-function displayCountries(countries) {
-  countriesContainer.innerHTML = ""; // Clear container
-  countries.forEach((country) => {
+function renderCountriesWithPagination(countries) {
+  if (currentPage === 1) {
+    countriesContainer.innerHTML = ""; // Reset the container for the first page
+  }
+
+  const startIndex = (currentPage - 1) * countriesPerPage;
+  const paginatedCountries = countries.slice(startIndex, startIndex + countriesPerPage);
+
+  paginatedCountries.forEach((country) => {
     const card = document.createElement("div");
     card.className = "country-card";
-
     card.innerHTML = `
-    <img src="${country.flags.png}" alt="${
-      country.name.common
-    }" class="flag-image" />
-    <h3 class="all">${country.name.common}</h3>
-    <p class="all">👤 ${country.population}</p>
-    <p class="all">🏛️ ${country.capital || "N/A"}</p>
-  `;
-
-    // Add event listener for the card to show details
+      <img src = "${country.flags.png}" alt = "${country.name.common}" class="flag-image" />
+      <h3 class="country-info">${country.name.common}</h3>
+      <p class="country-info"><img class="icon" src="./svg/results-demographics-svgrepo-com.svg"/> ${country.population}</p>
+      <p class="country-info"><img class="icon" src="./svg/capital-svgrepo-com.svg"/> ${country.capital || "N/A"}</p>
+      `;
     card.addEventListener("click", () => showDetails(country.name.common));
-
     countriesContainer.appendChild(card);
   });
+
+  showMoreButton.style.display = paginatedCountries.length < countriesPerPage ? "none" : "block";
+}
+
+function loadNextPage() {
+  currentPage += 1;
+  renderCountriesWithPagination(allCountries);
 }
 
 function displayFavorites() {
   let favorites = JSON.parse(localStorage.getItem("favoritesMap")) || {};
-  console.log("favorites loaded", favorites);
   if (Object.keys(favorites).length) {
     countriesContainer.classList.add("fav");
     let favHTML = `<div>
@@ -105,9 +100,10 @@ function displayFavorites() {
         <div class="fav-items">`;
     for (let countryCode of Object.keys(favorites)) {
       let country = favorites[countryCode];
-      favHTML += `<div class="fav-item" onclick="showDetails('${country.name.common}')"><img src="${country.flags.png}" width="16px"> ${country.name.common}</div>`;
+      favHTML += `<div class="fav-item" onclick="window.location.href = '/country.html?country=${country.name.common}'">
+        <img src="${country.flags.png}" class="icon"> ${country.name.common}</div>`;
     }
-    favHTML += `</div></div>`;
+    favHTML += `</div></ > `;
     favoritesContainer.innerHTML = favHTML;
     favoritesContainer.style.display = "block";
   } else {
@@ -115,88 +111,25 @@ function displayFavorites() {
   }
 }
 
-// Show country details (triggered on click of country card)
-function showDetails(name) {
-  window.location.href = `/country.html?country=${name}`;
-}
-
-// Create the "Show More" button
-function createShowMoreButton() {
-  showMoreButton.textContent = "Show More";
-  showMoreButton.className = "show-more-btn";
-  showMoreButton.style.display = "block";
-  showMoreButton.addEventListener("click", loadMoreCountries);
-  document.body.appendChild(showMoreButton); // Add it to the end of the body
-}
-
-// Load more countries when "Show More" is clicked
-function loadMoreCountries() {
-  const currentCount = displayedCountries.length;
-  const nextCountries = displayableCountries.slice(
-    currentCount,
-    currentCount + countriesPerPage
-  );
-  displayedCountries = [...displayedCountries, ...nextCountries];
-  displayCountries(displayedCountries);
-
-  // Hide the button if no more countries are left
-  if (displayedCountries.length >= displayableCountries.length) {
-    showMoreButton.style.display = "none";
-  }
-}
-
-function viewAll() {
-  let url = new URL(window.location.href);
-  url.searchParams.delete("region");
-  url.searchParams.delete("language");
-  url.searchParams.delete("search");
-  window.history.pushState({}, "", url);
-  fetchCountries();
-}
-
-function updateSearch(query) {
-  let url = new URL(window.location.href);
-  if (query) {
-    url.searchParams.set("search", query);
-  } else {
-    url.searchParams.delete("search");
-  }
-  window.history.pushState({}, "", url);
-  fetchCountries();
-}
-
-function hideSearchSuggestions() {
-  suggestions.innerHTML = "";
-  suggestions.style.display = "none";
-}
-
-// Filter by Region or Language
-[regionFilter, languageFilter].forEach((filter) => {
-  filter.addEventListener("change", () => {
-    let url = new URL(window.location.href);
-
-    if (regionFilter.value) {
-      url.searchParams.set("region", regionFilter.value);
-    } else {
-      url.searchParams.delete("region");
-    }
-    if (languageFilter.value) {
-      url.searchParams.set("language", languageFilter.value);
-    } else {
-      url.searchParams.delete("language");
-    }
-    window.history.pushState({}, "", url);
-    fetchCountries();
+function registerEvents() {
+  [regionFilter, languageFilter].forEach((filter) => {
+    filter.addEventListener("change", () => {
+      applyQueryFilters(regionFilter.value, languageFilter.value, searchInput.value);
+      displayCountries();
+    });
   });
-});
 
-// Search autosuggestions
-searchInput.addEventListener("input", () => {
+  searchInput.addEventListener("input", handleSearchInput);
+  searchInput.addEventListener("keypress", handleSearchEnter);
+
+  showMoreButton.onclick = loadNextPage;
+}
+
+async function handleSearchInput() {
   const query = searchInput.value.toLowerCase();
-
-  // If there's a search query, filter the countries
+  const countries = await filterCountries(regionFilter.value, languageFilter.value, "");
   if (query) {
-    const results = allCountries.filter((c) =>
+    const results = countries.filter((c) =>
       c.name.common.toLowerCase().includes(query)
     );
     if (!results.length) {
@@ -206,12 +139,8 @@ searchInput.addEventListener("input", () => {
     suggestions.innerHTML = "";
     results.slice(0, 5).forEach((c) => {
       const li = document.createElement("li");
-      const searchPattern = new RegExp(`(${query})`, "gi");
-      li.innerHTML = c.name.common.replace(searchPattern, "<b>$1</b>");
-      li.onclick = () => {
-        showDetails(c.name.common);
-        return;
-      };
+      li.innerHTML = c.name.common.replace(new RegExp(query, "gi"), "<b>$&</b>");
+      li.onclick = () => showDetails(c.name.common);
       suggestions.appendChild(li);
     });
     if (results.length > 5) {
@@ -219,7 +148,8 @@ searchInput.addEventListener("input", () => {
       li.classList.add("suggestions-view-all");
       li.innerHTML = `Show all results for <b>${searchInput.value}</b>`;
       li.onclick = () => {
-        updateSearch(query);
+        applyQueryFilters(regionFilter.value, languageFilter.value, query);
+        displayCountries();
         hideSearchSuggestions();
       };
       suggestions.appendChild(li);
@@ -228,13 +158,27 @@ searchInput.addEventListener("input", () => {
   } else {
     hideSearchSuggestions();
   }
-});
+}
 
-// Search functionality
-searchInput.addEventListener("keypress", (event) => {
+function handleSearchEnter(event) {
   if (event.key === "Enter") {
     const query = searchInput.value.toLowerCase();
-    updateSearch(query);
+    applyQueryFilters(regionFilter.value, languageFilter.value, query);
+    displayCountries();
     hideSearchSuggestions();
   }
-});
+}
+
+function hideSearchSuggestions() {
+  suggestions.innerHTML = "";
+  suggestions.style.display = "none";
+}
+
+function showDetails(name) {
+  window.location.href = `/country.html?country=${name}`;
+}
+
+function viewAll() {
+  applyQueryFilters();
+  displayCountries();
+}

@@ -143,8 +143,13 @@ body {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
-.all{
-  text-align: left;
+.country-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.icon {
+  width: 18px;
 }
 
 .flag-image {
@@ -343,6 +348,9 @@ p{
 #resultsCount {
   text-align: center;
   margin-bottom: 15px;
+}
+.hide {
+  display: none;
 }
 /* Responsive Styles */
 @media (max-width: 768px) {

@@ -1,4 +1,4 @@
-function toggleFavorite(country) {
+export function toggleFavorite(country) {
   let countryCode = country.cca3;
   let favorites = JSON.parse(localStorage.getItem("favoritesMap")) || {};
   let isAdded = false;
@@ -16,12 +16,12 @@ function toggleFavorite(country) {
   return isAdded;
 }
 
-function getFavorites() {
+export function getFavorites() {
   let favorites = JSON.parse(localStorage.getItem("favoritesMap")) || {};
   return favorites;
 }
 
-function isFavorite(country) {
+export function isFavorite(country) {
   console.log(getFavorites());
   console.log(country.cca3);
   if (getFavorites()[country.cca3]) {
