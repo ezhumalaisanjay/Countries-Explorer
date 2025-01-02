@@ -1,4 +1,5 @@
 import { applyQueryFilters, fetchCountries, filterCountries, getQueryFilters } from "./utils.js";
+import { getFavorites } from "./favorites.js";
 
 const countriesContainer = document.getElementById("countriesContainer");
 const searchInput = document.getElementById("searchInput");
@@ -92,7 +93,7 @@ function loadNextPage() {
 }
 
 function displayFavorites() {
-  let favorites = JSON.parse(localStorage.getItem("favoritesMap")) || {};
+  let favorites = getFavorites();
   if (Object.keys(favorites).length) {
     countriesContainer.classList.add("fav");
     let favHTML = `<div>
